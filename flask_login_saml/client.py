@@ -69,6 +69,50 @@ def _get_metadata(metadata_url):  # pragma: no cover
         return text
 
 
+def _get_client(prefix, metadata, allow_unknown_attributes=True):
+    """
+    :param prefix:
+    :type prefix: str
+    :param metadata:
+    :type metadata: str
+    :param allow_unknown_attributes:
+    :type allow_unknown_attributes: bool
+    :return:
+    :rtype: saml2.client.Saml2Client
+    """
+    acs_url = url_for('{}.authorize'.format(prefix.lower()), _external=True)
+    metadata_url = url_for('{}.metadata'.format(prefix.lower()), _external=True)
+    settings = {
+        'entityid': metadata_url,
+        'metadata': {
+            'inline': [metadata],
+        },
+        'service': {
+            'sp': {
+                'endpoints': {
+                    'assertion_consumer_service': [
+                        (acs_url, saml2.BINDING_HTTP_POST),
+                    ],
+                },
+                # Don't verify that the incoming requests originate from us via
+                # the built-in cache for authn request ids in pysaml2
+                'allow_unsolicited': True,
+                # Don't sign authn requests, since signed requests only make
+                # sense in a situation where you control both the SP and IdP
+                'authn_requests_signed': False,
+                'logout_requests_signed': True,
+                'want_assertions_signed': True,
+                'want_response_signed': False,
+            },
+        },
+    }
+    config = saml2.config.Config()
+    config.load(settings)
+    config.allow_unknown_attributes = allow_unknown_attributes
+    client = saml2.client.Saml2Client(config=config)
+    return client
+
+
 class FlaskSAML(object):
 
     _logout_user = None
@@ -78,54 +122,13 @@ class FlaskSAML(object):
     def __init__(self, app=None, prefix='SAML'):
         self._logout_user = _logout_saml_user
         self._login_user = _login_saml_user
+        self._get_client = _get_client
         self._error = _saml_error
         self.app = app
         self._prefix = prefix
         self._user_model = SAMLUser
         if self.app is not None:
             self.init_app(app)
-
-    def _get_client(self, metadata, allow_unknown_attributes=True):
-        """
-
-        :param metadata:
-        :type metadata: str
-        :param allow_unknown_attributes:
-        :type allow_unknown_attributes: bool
-        :return:
-        :rtype: saml2.client.Saml2Client
-        """
-        acs_url = url_for('{}.authorize'.format(self._prefix.lower()), _external=True)
-        metadata_url = url_for('{}.metadata'.format(self._prefix.lower()), _external=True)
-        settings = {
-            'entityid': metadata_url,
-            'metadata': {
-                'inline': [metadata],
-            },
-            'service': {
-                'sp': {
-                    'endpoints': {
-                        'assertion_consumer_service': [
-                            (acs_url, saml2.BINDING_HTTP_POST),
-                        ],
-                    },
-                    # Don't verify that the incoming requests originate from us via
-                    # the built-in cache for authn request ids in pysaml2
-                    'allow_unsolicited': True,
-                    # Don't sign authn requests, since signed requests only make
-                    # sense in a situation where you control both the SP and IdP
-                    'authn_requests_signed': False,
-                    'logout_requests_signed': True,
-                    'want_assertions_signed': True,
-                    'want_response_signed': False,
-                },
-            },
-        }
-        config = saml2.config.Config()
-        config.load(settings)
-        config.allow_unknown_attributes = allow_unknown_attributes
-        client = saml2.client.Saml2Client(config=config)
-        return client
 
     def init_app(self, app):
         """
@@ -134,17 +137,17 @@ class FlaskSAML(object):
         :type app: flask.Flask
         :return:
         """
-        app.config.setdefault('{}_PREFIX'.format(self._prefix), 'saml')
-        app.config.setdefault('{}_URL_PREFIX'.format(self._prefix), '/saml')
+        app.config.setdefault('{}_PREFIX'.format(self._prefix), self._prefix.lower())
         app.config.setdefault('{}_DEFAULT_REDIRECT'.format(self._prefix), '/')
         self._error = _saml_error
         self._login_user = _login_saml_user
+        self._get_client = _get_client
         self._logout_user = _logout_saml_user
         config = {
             'metadata': _get_metadata(
                 metadata_url=app.config['{}_METADATA_URL'.format(self._prefix)],
             ),
-            'prefix': app.config['{}_URL_PREFIX'.format(self._prefix)],
+            'prefix': app.config['{}_PREFIX'.format(self._prefix)],
             'default_redirect': app.config['{}_DEFAULT_REDIRECT'.format(self._prefix)],
         }
         # Register configuration on app so we can retrieve it later on
@@ -162,7 +165,7 @@ class FlaskSAML(object):
         :rtype: saml2.client.Saml2Client
         """
         ext, config = current_app.extensions[self._prefix.lower()]
-        client = self._get_client(config['metadata'])
+        client = self._get_client(self._prefix, config['metadata'])
         return client
 
     def metadata(self):
@@ -268,6 +271,12 @@ class FlaskSAML(object):
             self._logout_user = callback
         else:
             raise Exception("{}.{}.logout_user: {} not callable".format(__name__, __class__.__name__, callback))
+
+    def client(self, callback):
+        if callable(callback) and not inspect.isclass(callback):
+            self._get_client = callback
+        else:
+            raise Exception("{}.{}.client: {} not callable".format(__name__, __class__.__name__, callback))
 
     def error(self, callback):
         if callable(callback) and not inspect.isclass(callback):
