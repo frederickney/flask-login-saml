@@ -1,8 +1,10 @@
 # coding: utf-8
 
 import logging
-from flask import current_app
 from datetime import datetime
+import saml2.saml
+
+from flask import current_app
 
 
 class SAMLUser(object):
@@ -15,7 +17,6 @@ class SAMLUser(object):
         :return:
         :rtype: SAMLUser
         """
-        import client.saml
         assertion = saml2.saml.assertion_from_string(xml)
         attributes = {'Role': []}
         for attribute_statement in assertion.attribute_statement:
@@ -38,14 +39,12 @@ class SAMLUser(object):
         if hasattr(self, 'assertion'):
             return getattr(self, 'assertion')
 
-
     @property
     def is_active(self):
         return True
 
     @property
     def is_authenticated(self):
-        import client.saml
         if hasattr(self, "assertion"):
             return datetime.fromisoformat(
                 saml2.saml.assertion_from_string(getattr(self, 'assertion')).authn_statement[0].session_not_on_or_after
