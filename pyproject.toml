@@ -8,7 +8,7 @@ authors = [
     {name = "Frédérick NEY", email = "frederick.ney@gmail.com"},
 ]
 description = "Flask SAML2 with flask-login"
-readme = "readme.md"
+readme = "README.md"
 requires-python = ">=3.7"
 license = {file = "LICENSE"}
 classifiers = [
@@ -39,7 +39,7 @@ version = {"attr" =  "1.0.1"}
 
 [project.urls]
 Homepage = "https://github.com/frederickney/flask-login-saml"
-Documentation = "https://github.com/frederickney/flask-login-saml/blob/master/readme.md"
+Documentation = "https://github.com/frederickney/flask-login-saml/blob/master/README.md"
 Repository = "https://github.com/frederickney/flask-login-saml"
 Issues = "https://github.com/frederickney/flask-login-saml/issues"
 source = "https://github.com/frederickney/flask-login-saml"
