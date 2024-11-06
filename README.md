@@ -42,7 +42,7 @@ def authorize():
 
 @app.route('/saml/logout/', endpoint='saml.logout', methods=['GET'])
 @login_required
-def login():
+def logout():
     return saml.saml_logout()
 
 
@@ -100,7 +100,7 @@ def authorize():
 
 @app.route('/sso/logout/', endpoint='sso.logout', methods=['GET'])
 @login_required
-def login():
+def logout():
     return saml.saml_logout()
 
 
