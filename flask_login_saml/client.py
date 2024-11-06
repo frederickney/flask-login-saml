@@ -137,7 +137,7 @@ class FlaskSAML(object):
         :type app: flask.Flask
         :return:
         """
-        app.config.setdefault('{}_PREFIX'.format(self._prefix), self._prefix.lower())
+        app.config.setdefault('{}_PREFIX'.format(self._prefix), self._prefix)
         app.config.setdefault('{}_DEFAULT_REDIRECT'.format(self._prefix), '/')
         self._error = _saml_error
         self._login_user = _login_saml_user
