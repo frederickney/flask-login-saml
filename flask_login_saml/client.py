@@ -139,10 +139,6 @@ class FlaskSAML(object):
         """
         app.config.setdefault('{}_PREFIX'.format(self._prefix), self._prefix)
         app.config.setdefault('{}_DEFAULT_REDIRECT'.format(self._prefix), '/')
-        self._error = _saml_error
-        self._login_user = _login_saml_user
-        self._get_client = _get_client
-        self._logout_user = _logout_saml_user
         config = {
             'metadata': _get_metadata(
                 metadata_url=app.config['{}_METADATA_URL'.format(self._prefix)],
