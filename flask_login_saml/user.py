@@ -48,7 +48,7 @@ class SAMLUser(object):
         if hasattr(self, "assertion"):
             return datetime.fromisoformat(
                 saml2.saml.assertion_from_string(getattr(self, 'assertion')).authn_statement[0].session_not_on_or_after
-            ).strftime('%Y-%m-%dT%H:%M:%S.%fZ') > datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            ).strftime('%Y-%m-%dT%H:%M:%S.%fZ') >= datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     @property
     def is_anonymous(self):
