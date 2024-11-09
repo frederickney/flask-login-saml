@@ -2,7 +2,6 @@
 
 __author__ = "Frédérick NEY"
 
-
 import logging
 import inspect
 import saml2
@@ -14,6 +13,7 @@ import saml2.entity
 from flask import current_app, flash, signals, request, redirect, url_for
 from flask_login import login_user, logout_user
 from .user import SAMLUser
+
 signals = signals.Namespace()
 
 
@@ -22,22 +22,22 @@ def _saml_error(sender, exception):
 
 
 def _login_saml_user(model, sender, subject, attributes, assertion, auth):
-        """
+    """
 
-        :param sender: application identifier
-        :type sender: str
-        :param subject: email address of the logged user
-        :type subject: str
-        :param attributes: list of user attributes
-        :type attributes: list
-        :param auth: saml authn response used for remembering
-        :type auth: str
-        :return:
-        """
-        user = model(sender=sender, subject=subject, attributes=attributes, assertion=assertion, auth=auth)
-        logging.debug("{}: {}".format(__name__, user.__dict__))
-        flash('Successfully logged in')
-        return login_user(user)
+    :param sender: application identifier
+    :type sender: str
+    :param subject: email address of the logged user
+    :type subject: str
+    :param attributes: list of user attributes
+    :type attributes: list
+    :param auth: saml authn response used for remembering
+    :type auth: str
+    :return:
+    """
+    user = model(sender=sender, subject=subject, attributes=attributes, assertion=assertion, auth=auth)
+    logging.debug("{}: {}".format(__name__, user.__dict__))
+    flash('Successfully logged in')
+    return login_user(user)
 
 
 def _logout_saml_user(sender):
@@ -114,7 +114,6 @@ def _get_client(prefix, metadata, allow_unknown_attributes=True):
 
 
 class FlaskSAML(object):
-
     _logout_user = None
     _login_user = None
     _error = None
@@ -263,7 +262,7 @@ class FlaskSAML(object):
             raise Exception("{}.{}.login_user: {} not callable".format(__name__, __class__.__name__, callback))
 
     def logout_user(self, callback):
-        if callable(callback) and  not inspect.isclass(callback):
+        if callable(callback) and not inspect.isclass(callback):
             self._logout_user = callback
         else:
             raise Exception("{}.{}.logout_user: {} not callable".format(__name__, __class__.__name__, callback))
