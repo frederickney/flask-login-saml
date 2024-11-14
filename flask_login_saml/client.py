@@ -12,6 +12,8 @@ import saml2.entity
 
 from flask import current_app, flash, signals, request, redirect, url_for
 from flask_login import login_user, logout_user
+from werkzeug.utils import import_string
+
 from .user import SAMLUser
 
 signals = signals.Namespace()
@@ -152,6 +154,11 @@ class FlaskSAML(object):
             app.extensions[self._prefix.lower()] = self, config
         else:
             _, config = app.extensions[self._prefix.lower()]
+        app.config.setdefault("{}_USER_CLASS".format(self._prefix), "flask_login_oidc.user.OpenIDUser")
+        if app.config["{}_USER_CLASS".format(self._prefix)]:
+            self._user_model = import_string(
+                app.config["{}_USER_CLASS".format(self._prefix)]
+            )
 
     def saml_prepare(self):
         """

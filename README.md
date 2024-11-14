@@ -126,17 +126,19 @@ if __name__ == '__main__':
 
 ## Using custom user model
 
-Must be used after FlaskSAML.init_app() or FlaskSAML() if you are not using it
+Must be used before FlaskSAML.init_app() and after FlaskSAML()
 
 ```python
 saml.user_model(UserModel)
 ```
 
+Or can be loaded using environment  __'\<PREFIX\>\_USER_CLASS'__
+
 See [user.py](https://github.com/frederickney/flask-login-saml/blob/main/flask_login_saml/user.py) for more information about user model
 
 ## Custom login
 
-Must be used after FlaskSAML.init_app() or FlaskSAML() if you are not using it
+Must be used before FlaskSAML.init_app() and after FlaskSAML()
 
 ```python
 def login(model, sender, subject, attributes, assertion, auth):
@@ -164,7 +166,7 @@ saml.login_user(login)
 
 ## Custom logout
 
-Must be used after FlaskSAML.init_app() or FlaskSAML() if you are not using it
+Must be used before FlaskSAML.init_app() and after FlaskSAML()
 
 ```python
 
@@ -181,7 +183,7 @@ saml.logout_user(logout)
 
 ## Custom error
 
-Must be used after FlaskSAML.init_app() or FlaskSAML() if you are not using it
+Must be used before FlaskSAML.init_app() and after FlaskSAML()
 
 ```python
 def error(sender, exception):
@@ -199,7 +201,7 @@ saml.error(error)
 
 ## Custom client
 
-Must be used after FlaskSAML.init_app() or FlaskSAML() if you are not using it
+Must be used before FlaskSAML.init_app() and after FlaskSAML()
 
 ```python
 def client(prefix, metadata, allow_unknown_attributes=True):
