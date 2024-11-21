@@ -23,8 +23,9 @@ classifiers = [
 'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
+'Programming Language :: Python :: 3.13',
 ]
-version="1.0.5"
+version="1.0.6"
 dependencies = [
     "pysaml2",
     "Flask-Login",
@@ -34,7 +35,7 @@ dependencies = [
 
 
 [metadata]
-version = {"attr" =  "1.0.5"}
+version = {"attr" =  "1.0.6"}
 
 
 [project.urls]
