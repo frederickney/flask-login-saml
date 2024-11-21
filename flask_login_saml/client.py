@@ -37,7 +37,6 @@ def _login_saml_user(model, sender, subject, attributes, assertion, auth):
     :return:
     """
     user = model(sender=sender, subject=subject, attributes=attributes, assertion=assertion, auth=auth)
-    logging.debug("{}: {}".format(__name__, user.__dict__))
     flash('Successfully logged in')
     return login_user(user)
 
@@ -154,7 +153,7 @@ class FlaskSAML(object):
             app.extensions[self._prefix.lower()] = self, config
         else:
             _, config = app.extensions[self._prefix.lower()]
-        app.config.setdefault("{}_USER_CLASS".format(self._prefix), "flask_login_oidc.user.OpenIDUser")
+        app.config.setdefault("{}_USER_CLASS".format(self._prefix), "flask_login_saml.user.SAMLUser")
         if app.config["{}_USER_CLASS".format(self._prefix)]:
             self._user_model = import_string(
                 app.config["{}_USER_CLASS".format(self._prefix)]
@@ -197,7 +196,7 @@ class FlaskSAML(object):
         logging.debug('Received login request')
         return_to = request.args.get('next', '')
         ext, config = current_app.extensions[self._prefix.lower()]
-        if not return_to.startswith(request.url_root):
+        if not return_to.startswith("/") and not return_to.startswith(request.url_root):
             return_to = config['default_redirect']
         reqid, info = saml_client.prepare_for_authenticate(
             relay_state=return_to,
