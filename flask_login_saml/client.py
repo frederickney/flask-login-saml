@@ -84,7 +84,7 @@ def _get_client(prefix, metadata, allow_unknown_attributes=True):
     acs_url = url_for('{}.authorize'.format(prefix.lower()), _external=True)
     metadata_url = url_for('{}.metadata'.format(prefix.lower()), _external=True)
     settings = {
-        'entityid': metadata_url,
+        'entityid': current_app.name,
         'metadata': {
             'inline': [metadata],
         },
@@ -159,30 +159,30 @@ class FlaskSAML(object):
                 app.config["{}_USER_CLASS".format(self._prefix)]
             )
 
-    def saml_prepare(self):
+    def saml_prepare(self, prefix=None):
         """
 
         :return:
         :rtype: saml2.client.Saml2Client
         """
         ext, config = current_app.extensions[self._prefix.lower()]
-        client = self._get_client(self._prefix, config['metadata'])
+        client = self._get_client(prefix or self._prefix, config['metadata'])
         return client
 
-    def metadata(self):
+    def metadata(self, prefix=None):
         """
         metadata base view
         :return:
         """
-        saml_client = self.saml_prepare()
+        saml_client = self.saml_prepare(prefix=prefix)
         metadata_str = saml2.metadata.create_metadata_string(
             configfile=None,
             config=saml_client.config,
         )
         return metadata_str, {'Content-Type': 'text/xml'}
 
-    def saml_logout(self):
-        saml_client = self.saml_prepare()
+    def saml_logout(self, prefix=None):
+        saml_client = self.saml_prepare(prefix=prefix)
         logging.debug('Received logout request')
         self._logout_user(
             current_app.name
@@ -191,8 +191,8 @@ class FlaskSAML(object):
         url = request.url_root[:-1] + config['default_redirect']
         return redirect(url)
 
-    def saml_login(self):
-        saml_client = self.saml_prepare()
+    def saml_login(self, prefix=None):
+        saml_client = self.saml_prepare(prefix=prefix)
         logging.debug('Received login request')
         return_to = request.args.get('next', '')
         ext, config = current_app.extensions[self._prefix.lower()]
@@ -225,11 +225,11 @@ class FlaskSAML(object):
             ))
             return SAMLUser.load_from_assertion(xml_assertion)
 
-    def authorize(self):
+    def authorize(self, prefix=None):
         if 'SAMLResponse' in request.form:
             logging.debug('Received SAMLResponse for login')
             try:
-                saml_client = self.saml_prepare()
+                saml_client = self.saml_prepare(prefix=prefix)
                 authn_response = saml_client.parse_authn_request_response(
                     request.form['SAMLResponse'],
                     saml2.entity.BINDING_HTTP_POST,
